@@ -58,6 +58,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /api/concept2-token", srv.withAuth(srv.handleSaveConcept2Token))
+	mux.Handle("DELETE /api/concept2-token", srv.withAuth(srv.handleDeleteConcept2Token))
 	mux.Handle("GET /api/workouts", srv.withAuth(srv.handleListWorkouts))
 	mux.Handle("GET /api/workouts/{id}", srv.withAuth(srv.handleGetWorkout))
 	mux.Handle("GET /api/workouts/{id}/tcx", srv.withAuth(srv.handleGetWorkoutTCX))
@@ -85,6 +86,7 @@ type idTokenVerifier interface {
 type tokenStore interface {
 	GetConcept2Token(ctx context.Context, uid string) (string, error)
 	SaveConcept2Token(ctx context.Context, uid, token string) error
+	DeleteConcept2Token(ctx context.Context, uid string) error
 }
 
 type server struct {
@@ -191,6 +193,15 @@ func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]bool{"saved": true})
+}
+
+func (s *server) handleDeleteConcept2Token(w http.ResponseWriter, r *http.Request) {
+	uid := uidFromContext(r.Context())
+	if err := s.store.DeleteConcept2Token(r.Context(), uid); err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"deleted": true})
 }
 
 // workoutSummary is the JSON shape for one row of "list" - unlike the

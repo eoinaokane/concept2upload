@@ -51,6 +51,11 @@ func (f *fakeStore) SaveConcept2Token(ctx context.Context, uid, token string) er
 	return nil
 }
 
+func (f *fakeStore) DeleteConcept2Token(ctx context.Context, uid string) error {
+	delete(f.concept2Tokens, uid)
+	return nil
+}
+
 func withUID(r *http.Request, uid string) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), uidKey, uid))
 }
@@ -140,6 +145,23 @@ func TestHandleSaveConcept2Token(t *testing.T) {
 			t.Errorf("status = %d, want 400", rec.Code)
 		}
 	})
+}
+
+func TestHandleDeleteConcept2Token(t *testing.T) {
+	store := newFakeStore()
+	store.concept2Tokens["uid-1"] = "c2-token"
+	srv := &server{store: store}
+
+	req := withUID(httptest.NewRequest(http.MethodDelete, "/api/concept2-token", nil), "uid-1")
+	rec := httptest.NewRecorder()
+	srv.handleDeleteConcept2Token(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200; body = %s", rec.Code, rec.Body)
+	}
+	if _, ok := store.concept2Tokens["uid-1"]; ok {
+		t.Error("token still present after delete")
+	}
 }
 
 // --- handleListWorkouts / handleGetWorkout / handleGetWorkoutTCX

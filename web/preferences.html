@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preferences - concept2upload</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">concept2upload</a></h1>
+    <div id="auth-area"></div>
+  </header>
+
+  <div id="signed-out" class="card">
+    <p>Sign in to manage your preferences.</p>
+    <button id="sign-in" class="primary">Sign in with Google</button>
+  </div>
+
+  <div id="signed-in" class="hidden">
+    <div class="card">
+      <h2>Concept2 token</h2>
+      <div id="concept2-token-row">
+        <input id="concept2-token" type="password" placeholder="Concept2 Logbook API token" />
+        <button id="save-token" class="primary">Save</button>
+      </div>
+      <p class="muted">
+        Get a token from log.concept2.com &gt; Edit Profile &gt; Applications &gt;
+        Concept2 Logbook API integration.
+      </p>
+      <p class="muted" id="token-status"></p>
+      <p style="margin-top: 1rem;">
+        <button id="revoke-token" class="danger">Revoke saved token</button>
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Display</h2>
+      <div class="field-row">
+        <label for="timezone-select">Times in</label>
+        <select id="timezone-select">
+          <option value="local">My timezone</option>
+          <option value="recorded">As recorded</option>
+          <option value="utc">UTC</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label for="hour-format-select">Time format</label>
+        <select id="hour-format-select">
+          <option value="auto">Match my device</option>
+          <option value="12">12-hour</option>
+          <option value="24">24-hour</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <script type="module" src="prefs.js"></script>
+</body>
+</html>

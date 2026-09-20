@@ -65,6 +65,17 @@ func (s *Store) SaveConcept2Token(ctx context.Context, uid, token string) error 
 	return err
 }
 
+// DeleteConcept2Token removes uid's saved Concept2 API token, if any -
+// the web app's "revoke" action. Removes just the field (via the
+// firestore.Delete sentinel), not the whole document, since other
+// per-user data may live alongside it later.
+func (s *Store) DeleteConcept2Token(ctx context.Context, uid string) error {
+	_, err := s.userRef(uid).Set(ctx, map[string]interface{}{
+		"concept2Token": firestore.Delete,
+	}, firestore.MergeAll)
+	return err
+}
+
 // isNotFound reports whether err is what firestore.DocumentRef.Get returns
 // for a document that doesn't exist (a gRPC status error with code
 // codes.NotFound) - the client library has no plain sentinel for this.
