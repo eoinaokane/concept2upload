@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -165,44 +164,6 @@ func TestRefreshAccessToken_Success(t *testing.T) {
 	}
 	if tok.AccessToken != "new-access" {
 		t.Errorf("RefreshAccessToken() = %+v, unexpected", tok)
-	}
-}
-
-func TestBuildAuthorizeURL(t *testing.T) {
-	got := BuildAuthorizeURL("my-client-id", "https://example.com/callback", "opaque-state")
-
-	u, err := url.Parse(got)
-	if err != nil {
-		t.Fatalf("BuildAuthorizeURL() returned an unparseable URL: %v", err)
-	}
-	if u.Scheme+"://"+u.Host+u.Path != authorizeURL {
-		t.Errorf("BuildAuthorizeURL() base = %q, want %q", u.Scheme+"://"+u.Host+u.Path, authorizeURL)
-	}
-
-	q := u.Query()
-	for key, want := range map[string]string{
-		"client_id":       "my-client-id",
-		"response_type":   "code",
-		"redirect_uri":    "https://example.com/callback",
-		"approval_prompt": "auto",
-		"scope":           "activity:write,read",
-		"state":           "opaque-state",
-	} {
-		if got := q.Get(key); got != want {
-			t.Errorf("query[%q] = %q, want %q", key, got, want)
-		}
-	}
-}
-
-func TestBuildAuthorizeURL_OmitsEmptyState(t *testing.T) {
-	got := BuildAuthorizeURL("my-client-id", "https://example.com/callback", "")
-
-	u, err := url.Parse(got)
-	if err != nil {
-		t.Fatalf("BuildAuthorizeURL() returned an unparseable URL: %v", err)
-	}
-	if u.Query().Has("state") {
-		t.Error("BuildAuthorizeURL() with an empty state included a state param; want it omitted")
 	}
 }
 

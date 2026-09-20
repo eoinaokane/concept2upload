@@ -48,8 +48,7 @@ jobs:
             --region us-central1 \
             --project "${{ secrets.GCP_PROJECT_ID }}" \
             --allow-unauthenticated \
-            --quiet \
-            --set-env-vars "STRAVA_CLIENT_ID=${{ secrets.STRAVA_CLIENT_ID }},STRAVA_CLIENT_SECRET=${{ secrets.STRAVA_CLIENT_SECRET }},PUBLIC_BASE_URL=${{ secrets.PUBLIC_BASE_URL }}"
+            --quiet
 
       - name: Deploy Firestore rules and Hosting
         # Pinned rather than @latest: this step runs with GCP_SA_KEY in

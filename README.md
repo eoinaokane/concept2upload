@@ -203,11 +203,15 @@ make fmt-check vet build test
 
 ## Web app (Firebase + Cloud Run)
 
-The CLI's core logic (`internal/concept2`, `internal/tcx`, `internal/strava`)
-is also wrapped as a small multi-user JSON API in `cmd/server`, meant to run
-on **Cloud Run** behind **Firebase Hosting**, with **Firebase Auth** for
-sign-in and **Firestore** replacing the CLI's local token files
-(`internal/webstore`). A minimal static frontend lives in `web/`.
+The CLI's core logic (`internal/concept2`, `internal/tcx`) is also wrapped
+as a small multi-user JSON API in `cmd/server`, meant to run on
+**Cloud Run** behind **Firebase Hosting**, with **Firebase Auth** for
+sign-in and **Firestore** replacing the CLI's local token file
+(`internal/webstore`). A minimal static frontend lives in `web/`. It covers
+browsing and downloading Concept2 workouts as `.tcx` files; uploading to
+Strava stays a CLI-only feature (`concept2upload upload-strava`) - Strava
+now gates registering an API application behind a paid plan, so the web
+app doesn't run its own Strava OAuth flow.
 
 This is a scaffold, not a hosted product - you deploy your own copy to your
 own Firebase project.
@@ -216,14 +220,12 @@ own Firebase project.
 
 1. Create a Firebase project (<https://console.firebase.google.com>) and
    enable **Authentication > Google sign-in**, **Firestore**, and
-   **Cloud Run**/**Cloud Build** (via the Firebase/GCP console).
+   **Cloud Run**/**Cloud Build** (via the Firebase/GCP console - Cloud Run
+   requires the Blaze, pay-as-you-go plan; Firestore/Hosting/Auth alone
+   don't).
 2. Fill in `web/firebase-config.js` with your project's web app config
    (Project settings > General > Your apps).
-3. Create a Strava API application at
-   <https://www.strava.com/settings/api> for **this deployment** (shared by
-   all its users, unlike each user's own Concept2/Strava tokens) and note
-   its Client ID/Secret.
-4. Install the [Firebase CLI](https://firebase.google.com/docs/cli) and the
+3. Install the [Firebase CLI](https://firebase.google.com/docs/cli) and the
    [gcloud CLI](https://cloud.google.com/sdk/docs/install), then
    `firebase login` / `gcloud auth login`.
 
@@ -234,24 +236,18 @@ own Firebase project.
 gcloud run deploy concept2upload-server \
   --source . \
   --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars STRAVA_CLIENT_ID=your-client-id,STRAVA_CLIENT_SECRET=your-client-secret,PUBLIC_BASE_URL=https://your-project-id.web.app
+  --allow-unauthenticated
 
 # Deploy Firestore rules and the frontend (with the Cloud Run rewrite from
 # firebase.json).
 firebase deploy --only firestore:rules,hosting
 ```
 
-`--allow-unauthenticated` is safe here: every route except
-`/api/strava/callback` still requires a valid Firebase Auth ID token,
-checked inside `cmd/server` itself (see `withAuth` in `cmd/server/main.go`).
-Cloud Run's own default service account already has the credentials
-`cmd/server` needs for Firebase Auth/Firestore - no service account key
-file to manage.
-
-Finally, add `https://your-project-id.web.app/api/strava/callback` as an
-**Authorization Callback Domain** on your Strava API application's settings
-page.
+`--allow-unauthenticated` is safe here: every route still requires a valid
+Firebase Auth ID token, checked inside `cmd/server` itself (see `withAuth`
+in `cmd/server/main.go`). Cloud Run's own default service account already
+has the credentials `cmd/server` needs for Firebase Auth/Firestore - no
+service account key file to manage.
 
 ### Continuous deployment (GitHub Actions)
 
@@ -260,13 +256,10 @@ above automatically on every push to `main`, gated on `go build`/`vet`/
 `test`/`gofmt` passing first. It needs these repo secrets
 (Settings > Secrets and variables > Actions):
 
-| Secret                 | Value                                                                                                    |
-| ----------------------- | --------------------------------------------------------------------------------------------------------- |
-| `GCP_SA_KEY`            | JSON key for a service account with the **Cloud Run Admin**, **Cloud Build Editor**, **Artifact Registry Writer**, **Service Account User**, and **Firebase Hosting Admin** roles on your project |
-| `GCP_PROJECT_ID`        | Your Firebase/GCP project ID                                                                             |
-| `STRAVA_CLIENT_ID`      | From your Strava API application                                                                         |
-| `STRAVA_CLIENT_SECRET`  | From your Strava API application                                                                         |
-| `PUBLIC_BASE_URL`       | `https://your-project-id.web.app`                                                                        |
+| Secret          | Value                                                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GCP_SA_KEY`     | JSON key for a service account with the **Cloud Run Admin**, **Cloud Build Editor**, **Artifact Registry Writer**, **Service Account User**, and **Firebase Hosting Admin** roles on your project |
+| `GCP_PROJECT_ID` | Your Firebase/GCP project ID                                                                                                                       |
 
 A long-lived JSON key is the simplest way to get this running; swap it for
 [Workload Identity Federation](https://github.com/google-github-actions/auth#setup)
@@ -275,7 +268,6 @@ A long-lived JSON key is the simplest way to get this running; swap it for
 ### Local development
 
 ```bash
-export STRAVA_CLIENT_ID=... STRAVA_CLIENT_SECRET=... PUBLIC_BASE_URL=http://localhost:8080
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/a/service-account-key.json  # for local Firestore/Auth access
 go run ./cmd/server
 ```
