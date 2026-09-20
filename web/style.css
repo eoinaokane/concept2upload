@@ -132,6 +132,8 @@ input:focus, select:focus, button:focus {
 
 .muted { color: var(--muted); font-size: 0.8rem; }
 
+#upload-instructions { margin: 0 0 1rem; }
+
 .field-row {
   display: flex;
   align-items: center;
