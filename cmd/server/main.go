@@ -60,6 +60,7 @@ func main() {
 	mux.Handle("GET /api/concept2-token", srv.withAuth(srv.handleGetConcept2TokenStatus))
 	mux.Handle("POST /api/concept2-token", srv.withAuth(srv.handleSaveConcept2Token))
 	mux.Handle("DELETE /api/concept2-token", srv.withAuth(srv.handleDeleteConcept2Token))
+	mux.Handle("DELETE /api/account", srv.withAuth(srv.handleDeleteAccount))
 	mux.Handle("GET /api/workouts", srv.withAuth(srv.handleListWorkouts))
 	mux.Handle("GET /api/workouts/{id}", srv.withAuth(srv.handleGetWorkout))
 	mux.Handle("GET /api/workouts/{id}/tcx", srv.withAuth(srv.handleGetWorkoutTCX))
@@ -88,6 +89,7 @@ type tokenStore interface {
 	GetConcept2Token(ctx context.Context, uid string) (string, error)
 	SaveConcept2Token(ctx context.Context, uid, token string) error
 	DeleteConcept2Token(ctx context.Context, uid string) error
+	DeleteAccount(ctx context.Context, uid string) error
 }
 
 type server struct {
@@ -217,6 +219,19 @@ func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request)
 func (s *server) handleDeleteConcept2Token(w http.ResponseWriter, r *http.Request) {
 	uid := uidFromContext(r.Context())
 	if err := s.store.DeleteConcept2Token(r.Context(), uid); err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"deleted": true})
+}
+
+// handleDeleteAccount deletes uid's Firestore document - all server-side
+// data, not just the Concept2 token - the backend half of "delete
+// everything". The frontend deletes the matching Firebase Auth account
+// itself right after this succeeds.
+func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
+	uid := uidFromContext(r.Context())
+	if err := s.store.DeleteAccount(r.Context(), uid); err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

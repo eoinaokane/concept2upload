@@ -87,6 +87,29 @@
         </select>
       </div>
     </div>
+
+    <div class="card">
+      <details>
+        <summary>What does concept2upload store?</summary>
+        <ul class="muted">
+          <li>Your Concept2 API token - stored on our server, tied to your Google account. Nothing else about you lives there.</li>
+          <li>Display preferences (timezone, date/time format, how many workouts to show) - stored only in this browser, never sent to us.</li>
+          <li>Your workouts themselves - not stored by us at all. Every visit fetches them fresh from Concept2.</li>
+          <li>Your name, email and photo - managed by Google/Firebase sign-in, not stored in our database.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>Danger zone</h2>
+      <p class="muted">
+        Permanently deletes your saved Concept2 token, your display
+        preferences, and your account itself. You'll be signed out, and
+        signing in again later creates a brand-new account - this can't
+        be undone.
+      </p>
+      <button id="delete-account" class="danger">Delete everything</button>
+    </div>
   </div>
 
   <div id="status"></div>

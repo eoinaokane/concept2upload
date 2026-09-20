@@ -76,6 +76,16 @@ func (s *Store) DeleteConcept2Token(ctx context.Context, uid string) error {
 	return err
 }
 
+// DeleteAccount permanently removes uid's entire Firestore document - not
+// just the Concept2 token field, everything stored for them - the backend
+// half of the web app's "delete everything" action. The frontend deletes
+// the matching Firebase Auth account itself afterward. Deleting a
+// document that doesn't exist is not an error.
+func (s *Store) DeleteAccount(ctx context.Context, uid string) error {
+	_, err := s.userRef(uid).Delete(ctx)
+	return err
+}
+
 // isNotFound reports whether err is what firestore.DocumentRef.Get returns
 // for a document that doesn't exist (a gRPC status error with code
 // codes.NotFound) - the client library has no plain sentinel for this.

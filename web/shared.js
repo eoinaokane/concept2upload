@@ -9,12 +9,14 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
+  reauthenticateWithPopup,
+  deleteUser,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged };
+export { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, reauthenticateWithPopup, deleteUser };
 
 export async function authedFetch(path, options = {}) {
   const user = auth.currentUser;
@@ -51,6 +53,16 @@ export function savePrefs(patch) {
     localStorage.setItem(PREFS_KEY, JSON.stringify({ ...loadPrefs(), ...patch }));
   } catch {
     // Private browsing / blocked storage - preferences just won't persist.
+  }
+}
+
+// clearPrefs wipes the saved display preferences - part of "delete
+// everything" on the preferences page.
+export function clearPrefs() {
+  try {
+    localStorage.removeItem(PREFS_KEY);
+  } catch {
+    // Private browsing / blocked storage - nothing to clear.
   }
 }
 
