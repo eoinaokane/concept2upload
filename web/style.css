@@ -219,6 +219,7 @@ td.actions a:hover { text-decoration: underline; }
    default; the mobile media query below swaps them in for the text they
    stand in for, to keep the table from overflowing on small screens. */
 .type-icon, .action-icon { display: none; }
+.action-icon svg { display: block; }
 
 #status {
   margin-top: 1.25rem;
@@ -260,6 +261,7 @@ td.actions a:hover { text-decoration: underline; }
      place of the type name, and an icon-only download action. */
   .time-part { display: none; }
   .type-text, .action-text { display: none; }
-  .type-icon, .action-icon { display: inline; font-size: 1.1rem; }
+  .type-icon { display: inline; font-size: 1.1rem; }
+  .action-icon { display: inline-flex; color: var(--accent); }
   td.actions a { padding: 0.25rem; }
 }

@@ -176,7 +176,16 @@ function renderWorkouts(workouts) {
     const actionsTd = tr.lastElementChild;
 
     const tcxLink = document.createElement("a");
-    tcxLink.innerHTML = '<span class="action-text">Download .tcx</span><span class="action-icon" aria-hidden="true">⬇</span>';
+    tcxLink.innerHTML = `
+      <span class="action-text">Download .tcx</span>
+      <span class="action-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v12" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M5 21h14" />
+        </svg>
+      </span>
+    `;
     tcxLink.title = "Download .tcx";
     tcxLink.href = "#";
     tcxLink.addEventListener("click", async (e) => {
