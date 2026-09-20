@@ -215,6 +215,11 @@ td.actions a:hover { text-decoration: underline; }
 
 .hidden { display: none; }
 
+/* Type icons and the icon-only download action are desktop-hidden by
+   default; the mobile media query below swaps them in for the text they
+   stand in for, to keep the table from overflowing on small screens. */
+.type-icon, .action-icon { display: none; }
+
 #status {
   margin-top: 1.25rem;
   font-size: 0.85rem;
@@ -250,4 +255,11 @@ td.actions a:hover { text-decoration: underline; }
   #refresh-list { width: 100%; }
 
   button, input, select { min-height: 2.75rem; } /* comfortable tap target */
+
+  /* Trim the table to what fits: just the date (no clock time), an icon in
+     place of the type name, and an icon-only download action. */
+  .time-part { display: none; }
+  .type-text, .action-text { display: none; }
+  .type-icon, .action-icon { display: inline; font-size: 1.1rem; }
+  td.actions a { padding: 0.25rem; }
 }
