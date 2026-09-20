@@ -143,13 +143,14 @@ function formatDate(w) {
   return { date: formatDateParts(date, timeZone, prefs.dateFormat), time: `${time}${suffix}` };
 }
 
-// TYPE_ICONS covers Concept2's common machine types; anything else (e.g.
-// "dynamic") falls back to showing its raw type string even on small
-// screens, rather than a meaningless icon.
+// TYPE_ICONS covers Concept2's machine types; anything not listed here
+// falls back to showing its raw type string even on small screens, rather
+// than a meaningless icon.
 const TYPE_ICONS = {
   rower: "\u{1F6A3}",
   bike: "\u{1F6B4}",
   skierg: "\u{1F3BF}",
+  dynamic: "\u{1F30A}", // the Dynamic's sliding rail mimics rowing on water
 };
 
 function typeIcon(type) {
