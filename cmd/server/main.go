@@ -200,6 +200,7 @@ func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request)
 type workoutSummary struct {
 	ID            int64  `json:"id"`
 	Date          string `json:"date"`
+	Timezone      string `json:"timezone,omitempty"` // IANA name where the workout was recorded, e.g. "Europe/Dublin" - not the viewer's own timezone
 	Type          string `json:"type"`
 	Distance      int    `json:"distanceMetres"`
 	TimeFormatted string `json:"timeFormatted"`
@@ -237,6 +238,7 @@ func (s *server) handleListWorkouts(w http.ResponseWriter, r *http.Request) {
 		summaries = append(summaries, workoutSummary{
 			ID:            res.ID,
 			Date:          dateStr,
+			Timezone:      res.Timezone,
 			Type:          res.Type,
 			Distance:      res.Distance,
 			TimeFormatted: res.TimeFormatted,
@@ -290,6 +292,7 @@ func (s *server) handleGetWorkout(w http.ResponseWriter, r *http.Request) {
 		workoutSummary: workoutSummary{
 			ID:            detail.ID,
 			Date:          dateStr,
+			Timezone:      detail.Timezone,
 			Type:          detail.Type,
 			Distance:      detail.Distance,
 			TimeFormatted: detail.TimeFormatted,

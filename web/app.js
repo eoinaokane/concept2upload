@@ -20,12 +20,39 @@ const signedOut = el("signed-out");
 const signedIn = el("signed-in");
 const statusEl = el("status");
 const workoutsBody = document.querySelector("#workouts tbody");
+const limitSelect = el("limit-select");
+const timezoneSelect = el("timezone-select");
 
 let currentUser = null;
+let lastWorkouts = []; // re-rendered on a timezone-preference change without re-fetching
+
+// Remembered per-browser display preferences - not user data, so plain
+// localStorage rather than anything synced through the backend.
+const PREFS_KEY = "concept2upload:prefs";
+
+function loadPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(PREFS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function savePrefs(prefs) {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // Private browsing / blocked storage - preferences just won't persist.
+  }
+}
+
+const prefs = loadPrefs();
+if (prefs.limit) limitSelect.value = prefs.limit;
+if (prefs.timezone) timezoneSelect.value = prefs.timezone;
 
 function setStatus(msg, isError = false) {
   statusEl.textContent = msg;
-  statusEl.style.color = isError ? "#b00020" : "#333";
+  statusEl.classList.toggle("error", isError);
 }
 
 async function authedFetch(path, options = {}) {
@@ -68,15 +95,43 @@ el("save-token").addEventListener("click", async () => {
 
 el("refresh-list").addEventListener("click", loadWorkouts);
 
+limitSelect.addEventListener("change", () => {
+  savePrefs({ ...loadPrefs(), limit: limitSelect.value });
+  loadWorkouts();
+});
+
+timezoneSelect.addEventListener("change", () => {
+  savePrefs({ ...loadPrefs(), timezone: timezoneSelect.value });
+  renderWorkouts(lastWorkouts); // already have the data - just re-render with the new preference
+});
+
 async function loadWorkouts() {
   try {
     setStatus("Loading workouts...");
-    const res = await authedFetch("/api/workouts?limit=10");
-    const workouts = await res.json();
-    renderWorkouts(workouts);
-    setStatus(`Loaded ${workouts.length} workout(s).`);
+    const res = await authedFetch(`/api/workouts?limit=${limitSelect.value}`);
+    lastWorkouts = await res.json();
+    renderWorkouts(lastWorkouts);
+    setStatus(`Loaded ${lastWorkouts.length} workout(s).`);
   } catch (err) {
     setStatus(err.message, true);
+  }
+}
+
+// formatDate renders w.date according to the "Times in" preference:
+// the viewer's own timezone (default), the timezone the workout was
+// actually recorded in (w.timezone, an IANA name from Concept2 - not
+// always present), or UTC.
+function formatDate(w) {
+  const date = new Date(w.date);
+  const options = { dateStyle: "medium", timeStyle: "short" };
+  switch (timezoneSelect.value) {
+    case "utc":
+      return new Intl.DateTimeFormat(undefined, { ...options, timeZone: "UTC" }).format(date) + " UTC";
+    case "recorded":
+      if (!w.timezone) return new Intl.DateTimeFormat(undefined, options).format(date) + " (recorded tz unknown)";
+      return new Intl.DateTimeFormat(undefined, { ...options, timeZone: w.timezone }).format(date);
+    default:
+      return new Intl.DateTimeFormat(undefined, options).format(date);
   }
 }
 
@@ -87,20 +142,19 @@ function renderWorkouts(workouts) {
 
     const km = (w.distanceMetres / 1000).toFixed(1);
     tr.innerHTML = `
-      <td>${new Date(w.date).toLocaleString()}</td>
+      <td>${formatDate(w)}</td>
       <td>${w.type}</td>
       <td>${km} km</td>
       <td>${w.timeFormatted}</td>
       <td>${w.workoutType || ""}</td>
-      <td></td>
+      <td class="actions"></td>
     `;
 
     const actionsTd = tr.lastElementChild;
 
     const tcxLink = document.createElement("a");
-    tcxLink.textContent = ".tcx";
+    tcxLink.textContent = "Download .tcx";
     tcxLink.href = "#";
-    tcxLink.style.marginRight = "0.5rem";
     tcxLink.addEventListener("click", async (e) => {
       e.preventDefault();
       try {
