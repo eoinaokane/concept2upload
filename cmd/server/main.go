@@ -57,7 +57,9 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	mux.Handle("GET /api/concept2-token", srv.withAuth(srv.handleGetConcept2TokenStatus))
 	mux.Handle("POST /api/concept2-token", srv.withAuth(srv.handleSaveConcept2Token))
+	mux.Handle("DELETE /api/concept2-token", srv.withAuth(srv.handleDeleteConcept2Token))
 	mux.Handle("GET /api/workouts", srv.withAuth(srv.handleListWorkouts))
 	mux.Handle("GET /api/workouts/{id}", srv.withAuth(srv.handleGetWorkout))
 	mux.Handle("GET /api/workouts/{id}/tcx", srv.withAuth(srv.handleGetWorkoutTCX))
@@ -85,6 +87,7 @@ type idTokenVerifier interface {
 type tokenStore interface {
 	GetConcept2Token(ctx context.Context, uid string) (string, error)
 	SaveConcept2Token(ctx context.Context, uid, token string) error
+	DeleteConcept2Token(ctx context.Context, uid string) error
 }
 
 type server struct {
@@ -177,6 +180,24 @@ func pathID(r *http.Request) (int64, error) {
 
 // --- handlers --------------------------------------------------------------
 
+// handleGetConcept2TokenStatus reports whether uid has a Concept2 token
+// saved, without ever returning the token itself - just enough for the
+// preferences page to show "connected"/"not connected" and decide whether
+// to lead with the entry field or the revoke button.
+func (s *server) handleGetConcept2TokenStatus(w http.ResponseWriter, r *http.Request) {
+	uid := uidFromContext(r.Context())
+	_, err := s.store.GetConcept2Token(r.Context(), uid)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]bool{"saved": true})
+		return
+	}
+	if errors.Is(err, webstore.ErrNotFound) {
+		writeJSON(w, http.StatusOK, map[string]bool{"saved": false})
+		return
+	}
+	writeError(w, http.StatusInternalServerError, err.Error())
+}
+
 func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Token string `json:"token"`
@@ -193,6 +214,15 @@ func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, map[string]bool{"saved": true})
 }
 
+func (s *server) handleDeleteConcept2Token(w http.ResponseWriter, r *http.Request) {
+	uid := uidFromContext(r.Context())
+	if err := s.store.DeleteConcept2Token(r.Context(), uid); err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"deleted": true})
+}
+
 // workoutSummary is the JSON shape for one row of "list" - unlike the
 // CLI's positional numbering (backed by a .last_list.json cache file),
 // the web API just returns each workout's real Concept2 result ID, which
@@ -200,6 +230,7 @@ func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request)
 type workoutSummary struct {
 	ID            int64  `json:"id"`
 	Date          string `json:"date"`
+	Timezone      string `json:"timezone,omitempty"` // IANA name where the workout was recorded, e.g. "Europe/Dublin" - not the viewer's own timezone
 	Type          string `json:"type"`
 	Distance      int    `json:"distanceMetres"`
 	TimeFormatted string `json:"timeFormatted"`
@@ -237,6 +268,7 @@ func (s *server) handleListWorkouts(w http.ResponseWriter, r *http.Request) {
 		summaries = append(summaries, workoutSummary{
 			ID:            res.ID,
 			Date:          dateStr,
+			Timezone:      res.Timezone,
 			Type:          res.Type,
 			Distance:      res.Distance,
 			TimeFormatted: res.TimeFormatted,
@@ -290,6 +322,7 @@ func (s *server) handleGetWorkout(w http.ResponseWriter, r *http.Request) {
 		workoutSummary: workoutSummary{
 			ID:            detail.ID,
 			Date:          dateStr,
+			Timezone:      detail.Timezone,
 			Type:          detail.Type,
 			Distance:      detail.Distance,
 			TimeFormatted: detail.TimeFormatted,

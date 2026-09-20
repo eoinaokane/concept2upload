@@ -4,49 +4,56 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>concept2upload</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    button { cursor: pointer; padding: 0.4rem 0.8rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
-    button:hover { background: #f2f2f2; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    #concept2-token-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-    #concept2-token-row input { flex: 1; padding: 0.4rem; }
-    .hidden { display: none; }
-    .muted { color: #777; font-size: 0.85rem; }
-    #status { margin-top: 1rem; font-size: 0.9rem; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>concept2upload</h1>
+    <div class="brand">
+      <img id="avatar-img" class="avatar hidden" alt="" />
+      <h1><a href="index.html">concept2upload</a></h1>
+    </div>
     <div id="auth-area"></div>
   </header>
 
-  <div id="signed-out">
+  <div id="signed-out" class="card">
     <p>Sign in to see your Concept2 workouts and download them as .tcx files.</p>
-    <button id="sign-in">Sign in with Google</button>
+    <button id="sign-in" class="primary">Sign in with Google</button>
   </div>
 
   <div id="signed-in" class="hidden">
-    <div id="concept2-token-row">
-      <input id="concept2-token" type="password" placeholder="Concept2 Logbook API token" />
-      <button id="save-token">Save</button>
+    <div class="card">
+      <div class="table-scroll">
+        <table id="workouts">
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Distance</th><th>Time</th><th>Workout</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-    <p class="muted">
-      Get a token from log.concept2.com &gt; Edit Profile &gt; Applications &gt;
-      Concept2 Logbook API integration.
-    </p>
 
-    <button id="refresh-list">Refresh workouts</button>
+    <div class="table-footer">
+      <label>
+        Show
+        <select id="limit-select">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+          <option value="50">50</option>
+          <option value="250">All (up to 250)</option>
+        </select>
+      </label>
 
-    <table id="workouts">
-      <thead>
-        <tr><th>Date</th><th>Type</th><th>Distance</th><th>Time</th><th>Workout</th><th></th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+      <div class="pagination">
+        <button id="prev-page">&lsaquo; Previous</button>
+        <span id="page-info" class="muted"></span>
+        <button id="next-page">Next &rsaquo;</button>
+      </div>
+
+      <span class="spacer"></span>
+      <button id="refresh-list">Refresh</button>
+    </div>
   </div>
 
   <div id="status"></div>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preferences - concept2upload</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img id="avatar-img" class="avatar hidden" alt="" />
+      <h1><a href="index.html">concept2upload</a></h1>
+    </div>
+    <div id="auth-area"></div>
+  </header>
+
+  <div id="signed-out" class="card">
+    <p>Sign in to manage your preferences.</p>
+    <button id="sign-in" class="primary">Sign in with Google</button>
+  </div>
+
+  <div id="signed-in" class="hidden">
+    <div class="card">
+      <h2>Account</h2>
+      <p id="account-info" class="muted"></p>
+    </div>
+
+    <div class="card">
+      <h2>Concept2 token</h2>
+
+      <!-- Shown once a token is saved: day-to-day, revoking is the only
+           action most people need here again - the entry form is tucked
+           behind "Replace token" instead of always taking up space. -->
+      <div id="token-connected" class="hidden">
+        <p>&#9989; Connected.</p>
+        <div class="controls" style="margin: 0.5rem 0 0;">
+          <button id="revoke-token" class="danger">Revoke saved token</button>
+          <button id="show-replace">Replace token</button>
+        </div>
+        <p class="muted" style="margin-top: 0.75rem;">
+          "Revoke saved token" deletes your Concept2 token from this account -
+          it won't be usable here again until you paste a new one. To fully
+          revoke the token itself (so it stops working anywhere, not just
+          here), also remove it at
+          log.concept2.com &gt; Edit Profile &gt; Applications.
+        </p>
+      </div>
+
+      <div id="token-entry" class="hidden">
+        <div id="concept2-token-row">
+          <input id="concept2-token" type="password" placeholder="Concept2 Logbook API token" />
+          <button id="save-token" class="primary">Save</button>
+        </div>
+        <p class="muted">
+          Get a token from log.concept2.com &gt; Edit Profile &gt; Applications &gt;
+          Concept2 Logbook API integration.
+        </p>
+      </div>
+
+      <p class="muted" id="token-status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Display</h2>
+      <div class="field-row">
+        <label for="timezone-select">Times in</label>
+        <select id="timezone-select">
+          <option value="local">My timezone</option>
+          <option value="recorded">As recorded</option>
+          <option value="utc">UTC</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label for="hour-format-select">Time format</label>
+        <select id="hour-format-select">
+          <option value="auto">Match my device</option>
+          <option value="12">12-hour</option>
+          <option value="24">24-hour</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <script type="module" src="prefs.js"></script>
+</body>
+</html>

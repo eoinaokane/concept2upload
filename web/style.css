@@ -1,0 +1,253 @@
+/* Shared styles for index.html and preferences.html - a plain stylesheet,
+   no build step, no framework. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --border: #e2e4e9;
+  --text: #1a1d23;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --error: #dc2626;
+  --error-hover: #b91c1c;
+  --row-hover: #f3f6ff;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --surface: #1c1f26;
+    --border: #2c303a;
+    --text: #e8eaed;
+    --muted: #9aa1ac;
+    --accent: #5b8def;
+    --accent-hover: #7ba3f5;
+    --error: #f87171;
+    --error-hover: #fca5a5;
+    --row-hover: #23283a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+header h1 { font-size: 1.375rem; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+header h1 a { color: inherit; text-decoration: none; }
+
+.brand { display: flex; align-items: center; gap: 0.65rem; }
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+#auth-area {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+#auth-area a.nav-link { font-weight: 500; }
+
+a.nav-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+a.nav-link:hover { text-decoration: underline; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+.card + .card { margin-top: 1.25rem; }
+.card h2 { font-size: 1rem; margin: 0 0 0.25rem; }
+
+button {
+  cursor: pointer;
+  padding: 0.55rem 1rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+button:hover { background: var(--row-hover); }
+button:disabled { opacity: 0.5; cursor: default; }
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+button.danger {
+  background: transparent;
+  border-color: var(--error);
+  color: var(--error);
+}
+button.danger:hover { background: var(--error); color: #fff; border-color: var(--error-hover); }
+
+input, select {
+  font: inherit;
+  padding: 0.55rem 0.65rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+input:focus, select:focus, button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+#concept2-token-row { display: flex; gap: 0.6rem; margin-bottom: 0.75rem; }
+#concept2-token-row input { flex: 1; }
+
+.muted { color: var(--muted); font-size: 0.8rem; }
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+}
+.field-row + .field-row { border-top: 1px solid var(--border); }
+.field-row label { font-size: 0.875rem; }
+.field-row select { min-width: 10rem; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+}
+.controls label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.controls .spacer { flex: 1; }
+
+/* Below the table's card, on the plain page background - not another
+   shaded box - per request: Show/pagination/Refresh don't need their own
+   visual weight the way the data above them does. */
+.table-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.table-footer label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.table-footer .spacer { flex: 1; }
+
+.pagination { display: flex; align-items: center; gap: 0.6rem; }
+.pagination .muted { white-space: nowrap; }
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0.5rem -0.5rem 0; /* let the scroll area bleed to the card edge on narrow screens */
+}
+table { width: 100%; min-width: 520px; border-collapse: collapse; margin: 0; }
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 600;
+}
+tbody tr { transition: background-color 0.1s ease; }
+tbody tr:hover { background: var(--row-hover); }
+tbody tr:last-child td { border-bottom: none; }
+
+td.actions { text-align: right; white-space: nowrap; }
+td.actions a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+td.actions a:hover { text-decoration: underline; }
+
+.hidden { display: none; }
+
+#status {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+#status.error { color: var(--error); }
+
+@media (max-width: 600px) {
+  body { padding: 1.5rem 1rem 3rem; }
+  header {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  #auth-area { flex-wrap: wrap; }
+  .card { padding: 1rem; }
+
+  #concept2-token-row { flex-direction: column; }
+  #concept2-token-row input,
+  #concept2-token-row button { width: 100%; }
+
+  .field-row { flex-wrap: wrap; }
+  .field-row select { flex: 1; min-width: 0; }
+
+  .controls { gap: 0.6rem 1rem; }
+  .controls .spacer { flex-basis: 100%; height: 0; }
+  #refresh-list { width: 100%; }
+
+  .table-footer { gap: 0.6rem 1rem; }
+  .table-footer .spacer { flex-basis: 100%; height: 0; }
+  .pagination { width: 100%; justify-content: space-between; }
+  #refresh-list { width: 100%; }
+
+  button, input, select { min-height: 2.75rem; } /* comfortable tap target */
+}
