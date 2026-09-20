@@ -93,27 +93,53 @@ function renderPage() {
   }
 }
 
-// formatDate renders w.date according to the "Times in"/"Time format"
-// preferences (set on preferences.html): the viewer's own timezone
+// formatDateParts renders just the day/month/year of `date` in the given
+// timeZone (or the browser's own, if undefined), ordered per the
+// "Date format" preference: "eu" (DD/MM/YYYY, the default) or "us"
+// (MM/DD/YYYY). Built from formatToParts rather than dateStyle so the
+// day/month order is under our control instead of the browser locale's.
+function formatDateParts(date, timeZone, dateFormat) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    ...(timeZone ? { timeZone } : {}),
+  }).formatToParts(date);
+  const get = (type) => parts.find((p) => p.type === type).value;
+  const day = get("day");
+  const month = get("month");
+  const year = get("year");
+  return dateFormat === "us" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
+}
+
+// formatDate renders w.date according to the "Times in"/"Time format"/"Date
+// format" preferences (set on preferences.html): the viewer's own timezone
 // (default), the timezone the workout was actually recorded in
 // (w.timezone, an IANA name from Concept2 - not always present), or UTC;
-// and 12-/24-hour clock, or the browser's own default.
+// 12-/24-hour clock, or the browser's own default; and DD/MM/YYYY (default)
+// or MM/DD/YYYY.
 function formatDate(w) {
   const date = new Date(w.date);
   const prefs = loadPrefs();
-  const options = { dateStyle: "medium", timeStyle: "short" };
-  if (prefs.hourFormat === "12") options.hour12 = true;
-  else if (prefs.hourFormat === "24") options.hour12 = false;
+  const timeOptions = { timeStyle: "short" };
+  if (prefs.hourFormat === "12") timeOptions.hour12 = true;
+  else if (prefs.hourFormat === "24") timeOptions.hour12 = false;
 
-  switch (prefs.timezone) {
-    case "utc":
-      return new Intl.DateTimeFormat(undefined, { ...options, timeZone: "UTC" }).format(date) + " UTC";
-    case "recorded":
-      if (!w.timezone) return new Intl.DateTimeFormat(undefined, options).format(date) + " (recorded tz unknown)";
-      return new Intl.DateTimeFormat(undefined, { ...options, timeZone: w.timezone }).format(date);
-    default:
-      return new Intl.DateTimeFormat(undefined, options).format(date);
+  let timeZone;
+  let suffix = "";
+  if (prefs.timezone === "utc") {
+    timeZone = "UTC";
+    suffix = " UTC";
+  } else if (prefs.timezone === "recorded") {
+    if (!w.timezone) {
+      const time = new Intl.DateTimeFormat(undefined, timeOptions).format(date);
+      return `${formatDateParts(date, undefined, prefs.dateFormat)}, ${time} (recorded tz unknown)`;
+    }
+    timeZone = w.timezone;
   }
+
+  const time = new Intl.DateTimeFormat(undefined, { ...timeOptions, ...(timeZone ? { timeZone } : {}) }).format(date);
+  return `${formatDateParts(date, timeZone, prefs.dateFormat)}, ${time}${suffix}`;
 }
 
 function renderWorkouts(workouts) {

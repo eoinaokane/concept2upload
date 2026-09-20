@@ -8,6 +8,7 @@ const el = (id) => document.getElementById(id);
 const statusEl = el("status");
 const timezoneSelect = el("timezone-select");
 const hourFormatSelect = el("hour-format-select");
+const dateFormatSelect = el("date-format-select");
 const tokenConnected = el("token-connected");
 const tokenEntry = el("token-entry");
 
@@ -76,10 +77,12 @@ function loadDisplayPrefs() {
   const prefs = loadPrefs();
   timezoneSelect.value = prefs.timezone || "local";
   hourFormatSelect.value = prefs.hourFormat || "auto";
+  dateFormatSelect.value = prefs.dateFormat || "eu";
 }
 
 timezoneSelect.addEventListener("change", () => savePrefs({ timezone: timezoneSelect.value }));
 hourFormatSelect.addEventListener("change", () => savePrefs({ hourFormat: hourFormatSelect.value }));
+dateFormatSelect.addEventListener("change", () => savePrefs({ dateFormat: dateFormatSelect.value }));
 
 function showAccountInfo(user) {
   const who = user.displayName ? `${user.displayName} (${user.email})` : user.email;
