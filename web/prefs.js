@@ -2,7 +2,18 @@
 // display preferences (timezone, time format) that app.js reads when
 // rendering the workouts list. See shared.js for what's common with
 // index.html.
-import { authedFetch, loadPrefs, savePrefs, wireAuthNav, setAvatar } from "./shared.js";
+import {
+  authedFetch,
+  loadPrefs,
+  savePrefs,
+  clearPrefs,
+  wireAuthNav,
+  setAvatar,
+  auth,
+  GoogleAuthProvider,
+  reauthenticateWithPopup,
+  deleteUser,
+} from "./shared.js";
 
 const el = (id) => document.getElementById(id);
 const statusEl = el("status");
@@ -83,6 +94,31 @@ function loadDisplayPrefs() {
 timezoneSelect.addEventListener("change", () => savePrefs({ timezone: timezoneSelect.value }));
 hourFormatSelect.addEventListener("change", () => savePrefs({ hourFormat: hourFormatSelect.value }));
 dateFormatSelect.addEventListener("change", () => savePrefs({ dateFormat: dateFormatSelect.value }));
+
+// Deletes, in order: the Firestore account doc (server-side data), the
+// local display prefs, then the Firebase Auth account itself - the most
+// destructive step last, so a failure partway through never leaves the
+// account deleted with data still attached to it. Re-authenticating first
+// is required by Firebase for deleteUser() and doubles as an "are you
+// sure" check the user can back out of via the Google popup.
+el("delete-account").addEventListener("click", async () => {
+  if (!confirm("Delete your Concept2 token, preferences, and account? This can't be undone - signing in again later starts a brand-new account.")) return;
+
+  const user = auth.currentUser;
+  try {
+    setStatus("Confirm with Google to continue...");
+    await reauthenticateWithPopup(user, new GoogleAuthProvider());
+
+    setStatus("Deleting your data...");
+    await authedFetch("/api/account", { method: "DELETE" });
+    clearPrefs();
+
+    setStatus("Deleting your account...");
+    await deleteUser(user);
+  } catch (err) {
+    setStatus(err.message, true);
+  }
+});
 
 function showAccountInfo(user) {
   const who = user.displayName ? `${user.displayName} (${user.email})` : user.email;

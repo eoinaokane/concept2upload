@@ -134,6 +134,11 @@ input:focus, select:focus, button:focus {
 
 #upload-instructions { margin: 0 0 1rem; }
 
+details summary { cursor: pointer; font-weight: 600; font-size: 0.95rem; }
+details[open] summary { margin-bottom: 0.5rem; }
+details ul { margin: 0; padding-left: 1.1rem; }
+details li + li { margin-top: 0.4rem; }
+
 .field-row {
   display: flex;
   align-items: center;
