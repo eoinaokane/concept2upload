@@ -177,6 +177,7 @@ input:focus, select:focus, button:focus {
   gap: 0.4rem;
 }
 .table-footer .spacer { flex: 1; }
+#limit-select { width: 4.75rem; } /* fixed, not sized by its widest option ("All") */
 
 .pagination { display: flex; align-items: center; gap: 0.6rem; }
 .pagination .muted { white-space: nowrap; }
