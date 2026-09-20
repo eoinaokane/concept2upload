@@ -66,16 +66,6 @@ el("save-token").addEventListener("click", async () => {
   }
 });
 
-el("connect-strava").addEventListener("click", async () => {
-  try {
-    const res = await authedFetch("/api/strava/authorize-url");
-    const { url } = await res.json();
-    window.location.href = url;
-  } catch (err) {
-    setStatus(err.message, true);
-  }
-});
-
 el("refresh-list").addEventListener("click", loadWorkouts);
 
 async function loadWorkouts() {
@@ -127,25 +117,6 @@ function renderWorkouts(workouts) {
       }
     });
     actionsTd.appendChild(tcxLink);
-
-    const uploadBtn = document.createElement("button");
-    uploadBtn.textContent = "Upload to Strava";
-    uploadBtn.addEventListener("click", async () => {
-      uploadBtn.disabled = true;
-      try {
-        const res = await authedFetch(`/api/workouts/${w.id}/upload-strava`, { method: "POST" });
-        const body = await res.json();
-        setStatus(
-          body.alreadyUploaded
-            ? `Already uploaded as Strava activity ${body.stravaActivityId}.`
-            : `Uploaded as Strava activity ${body.stravaActivityId}.`
-        );
-      } catch (err) {
-        setStatus(err.message, true);
-        uploadBtn.disabled = false;
-      }
-    });
-    actionsTd.appendChild(uploadBtn);
 
     workoutsBody.appendChild(tr);
   }

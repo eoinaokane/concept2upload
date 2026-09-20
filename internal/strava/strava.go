@@ -248,25 +248,6 @@ func RefreshAccessToken(clientID, clientSecret, refreshToken string) (Token, err
 	return postForToken(form)
 }
 
-// BuildAuthorizeURL returns the Strava OAuth consent URL for the given
-// client ID, redirect URI, and opaque state value (echoed back verbatim to
-// redirectURI, so a caller handling multiple concurrent/multi-user flows -
-// like a web server - can use it to identify which user's flow a callback
-// belongs to). Unlike Authorize, this doesn't run a local callback server;
-// the caller is responsible for handling the redirect itself.
-func BuildAuthorizeURL(clientID, redirectURI, state string) string {
-	v := url.Values{}
-	v.Set("client_id", clientID)
-	v.Set("response_type", "code")
-	v.Set("redirect_uri", redirectURI)
-	v.Set("approval_prompt", "auto")
-	v.Set("scope", "activity:write,read")
-	if state != "" {
-		v.Set("state", state)
-	}
-	return authorizeURL + "?" + v.Encode()
-}
-
 // AccessToken returns a valid access token, transparently refreshing it via
 // the stored refresh token when it has expired.
 func AccessToken(clientID, clientSecret string) (string, error) {
