@@ -20,18 +20,30 @@
   <div id="signed-in" class="hidden">
     <div class="card">
       <h2>Concept2 token</h2>
-      <div id="concept2-token-row">
-        <input id="concept2-token" type="password" placeholder="Concept2 Logbook API token" />
-        <button id="save-token" class="primary">Save</button>
+
+      <!-- Shown once a token is saved: day-to-day, revoking is the only
+           action most people need here again - the entry form is tucked
+           behind "Replace token" instead of always taking up space. -->
+      <div id="token-connected" class="hidden">
+        <p>&#9989; Connected.</p>
+        <div class="controls" style="margin: 0.5rem 0 0;">
+          <button id="revoke-token" class="danger">Revoke saved token</button>
+          <button id="show-replace">Replace token</button>
+        </div>
       </div>
-      <p class="muted">
-        Get a token from log.concept2.com &gt; Edit Profile &gt; Applications &gt;
-        Concept2 Logbook API integration.
-      </p>
+
+      <div id="token-entry" class="hidden">
+        <div id="concept2-token-row">
+          <input id="concept2-token" type="password" placeholder="Concept2 Logbook API token" />
+          <button id="save-token" class="primary">Save</button>
+        </div>
+        <p class="muted">
+          Get a token from log.concept2.com &gt; Edit Profile &gt; Applications &gt;
+          Concept2 Logbook API integration.
+        </p>
+      </div>
+
       <p class="muted" id="token-status"></p>
-      <p style="margin-top: 1rem;">
-        <button id="revoke-token" class="danger">Revoke saved token</button>
-      </p>
     </div>
 
     <div class="card">

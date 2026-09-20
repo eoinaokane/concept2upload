@@ -8,6 +8,8 @@ const el = (id) => document.getElementById(id);
 const statusEl = el("status");
 const timezoneSelect = el("timezone-select");
 const hourFormatSelect = el("hour-format-select");
+const tokenConnected = el("token-connected");
+const tokenEntry = el("token-entry");
 
 function setStatus(msg, isError = false) {
   statusEl.textContent = msg;
@@ -17,6 +19,28 @@ function setStatus(msg, isError = false) {
 function setTokenStatus(msg) {
   el("token-status").textContent = msg;
 }
+
+// setTokenConnected switches between the two token states: connected (lead
+// with Revoke, the only thing most people need after initial setup) and
+// not connected (lead with the entry form).
+function setTokenConnected(saved) {
+  tokenConnected.classList.toggle("hidden", !saved);
+  tokenEntry.classList.toggle("hidden", saved);
+}
+
+async function loadTokenStatus() {
+  try {
+    const res = await authedFetch("/api/concept2-token");
+    const { saved } = await res.json();
+    setTokenConnected(saved);
+  } catch (err) {
+    setStatus(err.message, true);
+  }
+}
+
+el("show-replace").addEventListener("click", () => {
+  tokenEntry.classList.remove("hidden");
+});
 
 el("save-token").addEventListener("click", async () => {
   const token = el("concept2-token").value.trim();
@@ -28,6 +52,7 @@ el("save-token").addEventListener("click", async () => {
       body: JSON.stringify({ token }),
     });
     el("concept2-token").value = "";
+    setTokenConnected(true);
     setTokenStatus("Token saved.");
   } catch (err) {
     setTokenStatus("");
@@ -39,6 +64,7 @@ el("revoke-token").addEventListener("click", async () => {
   if (!confirm("Remove your saved Concept2 token? You'll need to paste it again to use the workouts list.")) return;
   try {
     await authedFetch("/api/concept2-token", { method: "DELETE" });
+    setTokenConnected(false);
     setTokenStatus("Token revoked.");
   } catch (err) {
     setTokenStatus("");
@@ -61,6 +87,9 @@ wireAuthNav({
   signedOut: el("signed-out"),
   signedIn: el("signed-in"),
   extraNavHTML: '<a class="nav-link" href="index.html">&larr; Workouts</a>',
-  onSignedIn: loadDisplayPrefs,
+  onSignedIn: () => {
+    loadDisplayPrefs();
+    loadTokenStatus();
+  },
   onSignedOut: () => setStatus(""),
 });

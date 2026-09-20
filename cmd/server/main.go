@@ -57,6 +57,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	mux.Handle("GET /api/concept2-token", srv.withAuth(srv.handleGetConcept2TokenStatus))
 	mux.Handle("POST /api/concept2-token", srv.withAuth(srv.handleSaveConcept2Token))
 	mux.Handle("DELETE /api/concept2-token", srv.withAuth(srv.handleDeleteConcept2Token))
 	mux.Handle("GET /api/workouts", srv.withAuth(srv.handleListWorkouts))
@@ -178,6 +179,24 @@ func pathID(r *http.Request) (int64, error) {
 }
 
 // --- handlers --------------------------------------------------------------
+
+// handleGetConcept2TokenStatus reports whether uid has a Concept2 token
+// saved, without ever returning the token itself - just enough for the
+// preferences page to show "connected"/"not connected" and decide whether
+// to lead with the entry field or the revoke button.
+func (s *server) handleGetConcept2TokenStatus(w http.ResponseWriter, r *http.Request) {
+	uid := uidFromContext(r.Context())
+	_, err := s.store.GetConcept2Token(r.Context(), uid)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]bool{"saved": true})
+		return
+	}
+	if errors.Is(err, webstore.ErrNotFound) {
+		writeJSON(w, http.StatusOK, map[string]bool{"saved": false})
+		return
+	}
+	writeError(w, http.StatusInternalServerError, err.Error())
+}
 
 func (s *server) handleSaveConcept2Token(w http.ResponseWriter, r *http.Request) {
 	var body struct {

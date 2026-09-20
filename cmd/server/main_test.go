@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -162,6 +163,51 @@ func TestHandleDeleteConcept2Token(t *testing.T) {
 	if _, ok := store.concept2Tokens["uid-1"]; ok {
 		t.Error("token still present after delete")
 	}
+}
+
+func TestHandleGetConcept2TokenStatus(t *testing.T) {
+	decodeSaved := func(t *testing.T, rec *httptest.ResponseRecorder) bool {
+		t.Helper()
+		var body struct {
+			Saved bool `json:"saved"`
+		}
+		if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
+			t.Fatalf("decoding response: %v", err)
+		}
+		return body.Saved
+	}
+
+	t.Run("token saved", func(t *testing.T) {
+		store := newFakeStore()
+		store.concept2Tokens["uid-1"] = "c2-token"
+		srv := &server{store: store}
+
+		req := withUID(httptest.NewRequest(http.MethodGet, "/api/concept2-token", nil), "uid-1")
+		rec := httptest.NewRecorder()
+		srv.handleGetConcept2TokenStatus(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("status = %d, want 200; body = %s", rec.Code, rec.Body)
+		}
+		if !decodeSaved(t, rec) {
+			t.Error("saved = false, want true")
+		}
+	})
+
+	t.Run("no token saved", func(t *testing.T) {
+		srv := &server{store: newFakeStore()}
+
+		req := withUID(httptest.NewRequest(http.MethodGet, "/api/concept2-token", nil), "uid-1")
+		rec := httptest.NewRecorder()
+		srv.handleGetConcept2TokenStatus(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("status = %d, want 200; body = %s", rec.Code, rec.Body)
+		}
+		if decodeSaved(t, rec) {
+			t.Error("saved = true, want false")
+		}
+	})
 }
 
 // --- handleListWorkouts / handleGetWorkout / handleGetWorkoutTCX
