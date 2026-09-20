@@ -54,9 +54,12 @@ export function savePrefs(patch) {
   }
 }
 
-// wireAuthNav wires up the header's sign-in/sign-out UI and the
+// wireAuthNav wires up the header's sign-in/sign-out UI (top right - just
+// "Sign out", not who you are; see setAvatar below for that) and the
 // signed-out/signed-in section toggle, shared by both pages. onSignedIn is
-// called (with the Firebase user) each time a sign-in is detected.
+// called (with the Firebase user) each time a sign-in is detected, so
+// callers that want to show "signed in as ..." can render that themselves
+// wherever it belongs on their own page.
 export function wireAuthNav({ signInBtn, authArea, signedOut, signedIn, extraNavHTML = "", onSignedIn, onSignedOut }) {
   signInBtn.addEventListener("click", () => {
     signInWithPopup(auth, new GoogleAuthProvider()).catch((err) => {
@@ -70,12 +73,9 @@ export function wireAuthNav({ signInBtn, authArea, signedOut, signedIn, extraNav
       signedOut.classList.add("hidden");
       signedIn.classList.remove("hidden");
       authArea.innerHTML = extraNavHTML;
-      const who = document.createElement("span");
-      who.textContent = `${user.displayName || user.email} `;
       const btn = document.createElement("button");
       btn.textContent = "Sign out";
       btn.addEventListener("click", () => signOut(auth));
-      authArea.appendChild(who);
       authArea.appendChild(btn);
       onSignedIn?.(user);
     } else {
@@ -85,4 +85,18 @@ export function wireAuthNav({ signInBtn, authArea, signedOut, signedIn, extraNav
       onSignedOut?.();
     }
   });
+}
+
+// setAvatar shows/hides the header's account-photo thumbnail (top left,
+// next to the title) based on sign-in state - pass it straight to
+// wireAuthNav's onSignedIn/onSignedOut, or call it from your own.
+export function setAvatar(imgEl, user) {
+  if (user?.photoURL) {
+    imgEl.src = user.photoURL;
+    imgEl.alt = user.displayName || user.email || "Account photo";
+    imgEl.classList.remove("hidden");
+  } else {
+    imgEl.classList.add("hidden");
+    imgEl.removeAttribute("src");
+  }
 }

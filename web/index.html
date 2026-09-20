@@ -8,7 +8,10 @@
 </head>
 <body>
   <header>
-    <h1>concept2upload</h1>
+    <div class="brand">
+      <img id="avatar-img" class="avatar hidden" alt="" />
+      <h1><a href="index.html">concept2upload</a></h1>
+    </div>
     <div id="auth-area"></div>
   </header>
 
@@ -19,22 +22,6 @@
 
   <div id="signed-in" class="hidden">
     <div class="card">
-      <div class="controls">
-        <label>
-          Show
-          <select id="limit-select">
-            <option value="10" selected>10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="40">40</option>
-            <option value="50">50</option>
-            <option value="250">All (up to 250)</option>
-          </select>
-        </label>
-        <span class="spacer"></span>
-        <button id="refresh-list">Refresh</button>
-      </div>
-
       <div class="table-scroll">
         <table id="workouts">
           <thead>
@@ -43,6 +30,29 @@
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <div class="table-footer">
+      <label>
+        Show
+        <select id="limit-select">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+          <option value="50">50</option>
+          <option value="250">All (up to 250)</option>
+        </select>
+      </label>
+
+      <div class="pagination">
+        <button id="prev-page">&lsaquo; Previous</button>
+        <span id="page-info" class="muted"></span>
+        <button id="next-page">Next &rsaquo;</button>
+      </div>
+
+      <span class="spacer"></span>
+      <button id="refresh-list">Refresh</button>
     </div>
   </div>
 

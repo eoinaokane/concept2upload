@@ -3,7 +3,13 @@
 // (Firebase Hosting rewrites that to the Cloud Run service; see
 // firebase.json). Concept2 token management and display preferences live
 // on preferences.html (prefs.js) - see shared.js for what's common.
-import { authedFetch, loadPrefs, savePrefs, wireAuthNav } from "./shared.js";
+import { authedFetch, loadPrefs, savePrefs, wireAuthNav, setAvatar } from "./shared.js";
+
+// Concept2's own per-request cap (see internal/concept2.ListLatest). One
+// fetch pulls everything available up to this, sorted newest-first by the
+// backend; "Show" and Previous/Next then just slice through it client-side
+// - no extra network round trip per page.
+const MAX_FETCH = 250;
 
 const el = (id) => document.getElementById(id);
 const signedOut = el("signed-out");
@@ -11,8 +17,12 @@ const signedIn = el("signed-in");
 const statusEl = el("status");
 const workoutsBody = document.querySelector("#workouts tbody");
 const limitSelect = el("limit-select");
+const prevBtn = el("prev-page");
+const nextBtn = el("next-page");
+const pageInfo = el("page-info");
 
-let lastWorkouts = []; // kept so a "Times in"/"Time format" change elsewhere doesn't need a re-fetch
+let allWorkouts = [];
+let currentPage = 1;
 
 const savedLimit = loadPrefs().workoutsLimit;
 if (savedLimit) limitSelect.value = savedLimit;
@@ -31,23 +41,55 @@ el("refresh-list").addEventListener("click", loadWorkouts);
 
 limitSelect.addEventListener("change", () => {
   savePrefs({ workoutsLimit: limitSelect.value });
-  loadWorkouts();
+  currentPage = 1;
+  renderPage();
+});
+
+prevBtn.addEventListener("click", () => {
+  currentPage--;
+  renderPage();
+});
+
+nextBtn.addEventListener("click", () => {
+  currentPage++;
+  renderPage();
 });
 
 async function loadWorkouts() {
   try {
     setStatus("Loading workouts...");
-    const res = await authedFetch(`/api/workouts?limit=${limitSelect.value}`);
-    lastWorkouts = await res.json();
-    renderWorkouts(lastWorkouts);
-    setStatus(`Loaded ${lastWorkouts.length} workout(s).`);
+    const res = await authedFetch(`/api/workouts?limit=${MAX_FETCH}`);
+    allWorkouts = await res.json();
+    currentPage = 1;
+    renderPage();
   } catch (err) {
     if (/no concept2 token saved/i.test(err.message)) {
-      workoutsBody.innerHTML = "";
+      allWorkouts = [];
+      renderPage();
       setStatusHTML('No Concept2 token saved yet - add one on the <a href="preferences.html">Preferences</a> page.', true);
       return;
     }
     setStatus(err.message, true);
+  }
+}
+
+// renderPage slices allWorkouts into pages of the "Show" size and renders
+// whichever page currentPage points at, updating the Previous/Next controls
+// to match - all in memory, no re-fetch.
+function renderPage() {
+  const pageSize = parseInt(limitSelect.value, 10) || 10;
+  const totalPages = Math.max(1, Math.ceil(allWorkouts.length / pageSize));
+  currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+  const start = (currentPage - 1) * pageSize;
+  renderWorkouts(allWorkouts.slice(start, start + pageSize));
+
+  pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+  prevBtn.disabled = currentPage <= 1;
+  nextBtn.disabled = currentPage >= totalPages;
+
+  if (allWorkouts.length > 0) {
+    setStatus(`Loaded ${allWorkouts.length} workout(s).`);
   }
 }
 
@@ -115,12 +157,20 @@ function renderWorkouts(workouts) {
   }
 }
 
+const avatarImg = el("avatar-img");
+
 wireAuthNav({
   signInBtn: el("sign-in"),
   authArea: el("auth-area"),
   signedOut,
   signedIn,
   extraNavHTML: '<a class="nav-link" href="preferences.html">Preferences</a>',
-  onSignedIn: loadWorkouts,
-  onSignedOut: () => setStatus(""),
+  onSignedIn: (user) => {
+    setAvatar(avatarImg, user);
+    loadWorkouts();
+  },
+  onSignedOut: () => {
+    setAvatar(avatarImg, null);
+    setStatus("");
+  },
 });

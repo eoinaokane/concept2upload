@@ -2,7 +2,7 @@
 // display preferences (timezone, time format) that app.js reads when
 // rendering the workouts list. See shared.js for what's common with
 // index.html.
-import { authedFetch, loadPrefs, savePrefs, wireAuthNav } from "./shared.js";
+import { authedFetch, loadPrefs, savePrefs, wireAuthNav, setAvatar } from "./shared.js";
 
 const el = (id) => document.getElementById(id);
 const statusEl = el("status");
@@ -81,15 +81,27 @@ function loadDisplayPrefs() {
 timezoneSelect.addEventListener("change", () => savePrefs({ timezone: timezoneSelect.value }));
 hourFormatSelect.addEventListener("change", () => savePrefs({ hourFormat: hourFormatSelect.value }));
 
+function showAccountInfo(user) {
+  const who = user.displayName ? `${user.displayName} (${user.email})` : user.email;
+  el("account-info").textContent = `Signed in as ${who}`;
+}
+
+const avatarImg = el("avatar-img");
+
 wireAuthNav({
   signInBtn: el("sign-in"),
   authArea: el("auth-area"),
   signedOut: el("signed-out"),
   signedIn: el("signed-in"),
   extraNavHTML: '<a class="nav-link" href="index.html">&larr; Workouts</a>',
-  onSignedIn: () => {
+  onSignedIn: (user) => {
+    setAvatar(avatarImg, user);
+    showAccountInfo(user);
     loadDisplayPrefs();
     loadTokenStatus();
   },
-  onSignedOut: () => setStatus(""),
+  onSignedOut: () => {
+    setAvatar(avatarImg, null);
+    setStatus("");
+  },
 });

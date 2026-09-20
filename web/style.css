@@ -49,6 +49,15 @@ header {
 header h1 { font-size: 1.375rem; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
 header h1 a { color: inherit; text-decoration: none; }
 
+.brand { display: flex; align-items: center; gap: 0.65rem; }
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
 #auth-area {
   display: flex;
   align-items: center;
@@ -150,6 +159,28 @@ input:focus, select:focus, button:focus {
 }
 .controls .spacer { flex: 1; }
 
+/* Below the table's card, on the plain page background - not another
+   shaded box - per request: Show/pagination/Refresh don't need their own
+   visual weight the way the data above them does. */
+.table-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.table-footer label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.table-footer .spacer { flex: 1; }
+
+.pagination { display: flex; align-items: center; gap: 0.6rem; }
+.pagination .muted { white-space: nowrap; }
+
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -211,6 +242,11 @@ td.actions a:hover { text-decoration: underline; }
 
   .controls { gap: 0.6rem 1rem; }
   .controls .spacer { flex-basis: 100%; height: 0; }
+  #refresh-list { width: 100%; }
+
+  .table-footer { gap: 0.6rem 1rem; }
+  .table-footer .spacer { flex-basis: 100%; height: 0; }
+  .pagination { width: 100%; justify-content: space-between; }
   #refresh-list { width: 100%; }
 
   button, input, select { min-height: 2.75rem; } /* comfortable tap target */
